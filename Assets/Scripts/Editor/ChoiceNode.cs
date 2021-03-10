@@ -5,14 +5,32 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
+[CreateAssetMenu(fileName = "Story", menuName = "StoryNode/ChoiceNode")]
 public class ChoiceNode : BaseNode
 {
-	string str = "this is a choice";
+	public override void Init()
+	{
+		base.Init();
+	}
 
 	public override void DrawWindow()
 	{
-		str = GUILayout.TextArea(str, 200);
+		if (!changeTitle)
+		{
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("Title: ", GUILayout.Width(50));
+			windowTitle = EditorGUILayout.TextField(windowTitle, GUILayout.Width(100));
+			changeTitle = EditorGUILayout.Toggle(changeTitle);
+			EditorGUILayout.EndHorizontal();
+		}
+		DrawTextAreas();
+
 		base.DrawWindow();
+	}
+
+	public override void DrawTextAreas()
+	{
+		base.DrawTextAreas();
 	}
 
 	public override void DrawCurves()

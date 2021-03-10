@@ -5,8 +5,14 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
+[CreateAssetMenu(fileName = "Story", menuName = "StoryNode/StoryNode")]
 public class StoryNode : BaseNode
 {
+	public override void Init()
+	{
+		base.Init();
+	}
+
 	public override void DrawWindow()
 	{
 		if (!changeTitle)
@@ -17,8 +23,17 @@ public class StoryNode : BaseNode
 			changeTitle = EditorGUILayout.Toggle(changeTitle);
 			EditorGUILayout.EndHorizontal();
 		}
+		DrawTextAreas();
 		
 		base.DrawWindow();
+	}
+
+	public override void DrawTextAreas()
+	{
+		foreach (string s in textAreas)
+		{
+			GUILayout.TextArea(s, 200);
+		}
 	}
 
 	public override void DrawCurves()

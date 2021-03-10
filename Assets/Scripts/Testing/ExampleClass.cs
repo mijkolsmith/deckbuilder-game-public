@@ -9,17 +9,17 @@ public class ExampleClass : MonoBehaviour, IExampleClass
 	}
 
 	public string someData = "DATA";
-	protected string name = "ExampleClass";
+	protected string testname = "ExampleClass";
 	private string secret = "I love snacks";
 
 	public string GetName()
 	{
-		return name;
+		return testname;
 	}
 
 	public void SetName(string newName) 
 	{
-		name = newName;
+		testname = newName;
 	}
 
 	public void Prepare()
