@@ -15,16 +15,6 @@ public class ChoiceNode : BaseNode
 
 	public override void DrawWindow()
 	{
-		if (!changeTitle)
-		{
-			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Title: ", GUILayout.Width(50));
-			windowTitle = EditorGUILayout.TextField(windowTitle, GUILayout.Width(100));
-			changeTitle = EditorGUILayout.Toggle(changeTitle);
-			EditorGUILayout.EndHorizontal();
-		}
-		DrawTextAreas();
-
 		base.DrawWindow();
 	}
 

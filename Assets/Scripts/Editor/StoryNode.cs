@@ -15,25 +15,12 @@ public class StoryNode : BaseNode
 
 	public override void DrawWindow()
 	{
-		if (!changeTitle)
-		{
-			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Title: ", GUILayout.Width(50));
-			windowTitle = EditorGUILayout.TextField(windowTitle, GUILayout.Width(100));
-			changeTitle = EditorGUILayout.Toggle(changeTitle);
-			EditorGUILayout.EndHorizontal();
-		}
-		DrawTextAreas();
-		
 		base.DrawWindow();
 	}
 
 	public override void DrawTextAreas()
 	{
-		foreach (string s in textAreas)
-		{
-			GUILayout.TextArea(s, 200);
-		}
+		base.DrawTextAreas();
 	}
 
 	public override void DrawCurves()

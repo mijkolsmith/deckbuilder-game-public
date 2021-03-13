@@ -13,12 +13,35 @@ public abstract class BaseNode : ScriptableObject
 	public bool changeTitle;
 	public List<string> textAreas;
 
+	private NodeEditor nodeEditor;
+
 	public virtual void Init()
 	{
 		textAreas = new List<string>();
 	}
 
-	public virtual void DrawWindow() { }
+	public virtual void DrawWindow()
+	{
+		if (!changeTitle)
+		{
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("Title: ", GUILayout.Width(50));
+			windowTitle = EditorGUILayout.TextField(windowTitle, GUILayout.Width(100));
+			changeTitle = EditorGUILayout.Toggle(changeTitle);
+			EditorGUILayout.EndHorizontal();
+			
+			if (nodeEditor != null)
+			{
+				nodeEditor.CheckName();
+			}
+			else
+			{
+				Debug.Log(windowTitle + " bug");
+			}
+		}
+		DrawTextAreas();
+	}
+
 	public virtual void DrawCurves() { }
 	public virtual void DrawTextAreas()
 	{
@@ -26,6 +49,11 @@ public abstract class BaseNode : ScriptableObject
 		{
 			GUILayout.TextArea(s, 200);
 		}
+	}
+
+	public virtual void SetNodeEditor(NodeEditor nodeEditor)
+	{
+		this.nodeEditor = nodeEditor;
 	}
 
 #if UNITY_EDITOR

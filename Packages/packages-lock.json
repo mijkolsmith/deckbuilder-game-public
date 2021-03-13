@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.github.siccity.xnode": {
+      "version": "file:C:/Users/Michael/Downloads/temp/xNode-master",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.unity.collab-proxy": {
       "version": "1.3.9",
       "depth": 0,
