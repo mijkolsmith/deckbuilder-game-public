@@ -9,9 +9,12 @@ public enum UserActions
 {
 	ADD_STORY_NODE,
 	ADD_CHOICE_NODE,
+
 	CHANGE_TITLE,
+	ADD_CURVE,
 	ADD_DIALOGUE,
 	REMOVE_DIALOGUE,
+
 	DELETE_NODE
 }
 
@@ -21,7 +24,12 @@ public class NodeEditor : EditorWindow
 	Vector3 mousePos;
 	bool makeTransition;
 	bool clickedOnWindow;
+	bool drawCurveOnMousePos;
+	BaseNode startNode;
 	BaseNode selectedNode;
+
+	int windowWidth = 200;
+	int windowHeight = 300;
 
 	[MenuItem("NodeEditor/Node Editor")]
 	static void Init()
@@ -47,11 +55,16 @@ public class NodeEditor : EditorWindow
 		mousePos = e.mousePosition;
 		UserInput(e);
 		DrawWindows();
+		if (drawCurveOnMousePos)
+		{
+			DrawCursorCurve();
+		}
 	}
 
 	private void OnDisable()
 	{
 		SaveStoryNodes();
+		drawCurveOnMousePos = false;
 	}
 
 	private void OnEnable()
@@ -102,6 +115,16 @@ public class NodeEditor : EditorWindow
 		GUI.DragWindow();
 	}
 
+	//Draw the curve when making a new one
+	void DrawCursorCurve()
+	{
+		StoryNode tempNode = CreateInstance<StoryNode>();
+		tempNode.windowRect = new Rect(mousePos.x, mousePos.y, 0, 0);
+		Curve tempCurve = new Curve(startNode, tempNode, Color.black);
+		DrawNodeCurve(tempCurve);
+		Repaint();
+	}
+
 	//Check the user input
 	void UserInput(Event e)
 	{
@@ -140,9 +163,15 @@ public class NodeEditor : EditorWindow
 			if (windows[i].windowRect.Contains(e.mousePosition))
 			{
 				selectedNode = windows[i];
+				if (drawCurveOnMousePos)
+				{
+					Curve curve = new Curve(startNode, selectedNode, Color.black);
+					SaveConnection(curve);
+				}
 				break;
 			}
 		}
+		drawCurveOnMousePos = false;
 	}
 
 	//When rmb is pressed
@@ -203,7 +232,7 @@ public class NodeEditor : EditorWindow
 			//creation
 			case UserActions.ADD_STORY_NODE:
 				StoryNode storyNode = CreateInstance<StoryNode>();
-				storyNode.windowRect = new Rect(mousePos.x, mousePos.y, 200, 300);
+				storyNode.windowRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight);
 				storyNode.windowTitle = "StoryNode";
 				storyNode.SetNodeEditor(this);
 
@@ -214,7 +243,7 @@ public class NodeEditor : EditorWindow
 
 			case UserActions.ADD_CHOICE_NODE:
 				ChoiceNode choiceNode = CreateInstance<ChoiceNode>();
-				choiceNode.windowRect = new Rect(mousePos.x, mousePos.y, 200, 300);
+				choiceNode.windowRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight);
 				choiceNode.windowTitle = "ChoiceNode";
 				choiceNode.SetNodeEditor(this);
 
@@ -226,6 +255,11 @@ public class NodeEditor : EditorWindow
 			//editing
 			case UserActions.CHANGE_TITLE:
 				selectedNode.changeTitle = false;
+				break;
+
+			case UserActions.ADD_CURVE:
+				drawCurveOnMousePos = true;
+				startNode = selectedNode;
 				break;
 
 			case UserActions.ADD_DIALOGUE:
@@ -320,7 +354,7 @@ public class NodeEditor : EditorWindow
 
 			for(int i = 0; i < node.textAreas.Count; i++)
 			{
-				story.stories[i] = node.textAreas[i];
+				story.dialogue.Add(node.textAreas[i]);
 			}
 
 			string fileName = node.windowTitle;
@@ -335,40 +369,71 @@ public class NodeEditor : EditorWindow
 
 	public void CheckName()
 	{
-		foreach (var window in windows)
+		if (selectedNode != null)
 		{
-			if (selectedNode.windowTitle == window.windowTitle && selectedNode != window)
+			foreach (var window in windows)
 			{
-				selectedNode.windowTitle += " 2";
+				if (selectedNode.windowTitle == window.windowTitle && selectedNode != window)
+				{
+					selectedNode.windowTitle += " 2";
+				}
 			}
 		}
 	}
 	#endregion
 
 	#region Helper Methods
-	public static void DrawNodeCurve(Rect start, Rect end, bool left, Color curveColor)
+	//Draw the curves for each saved curve
+	public static void DrawNodeCurve(Curve curve)
 	{
+		Rect start = curve.startNode.windowRect;
+		Rect end = curve.endNode.windowRect;
+		Color curveColor = curve.color;
+
+		if (end == start)
+		{
+			return;
+		}
+
 		Vector3 startPos = new Vector3(
-			(left) ? start.x + start.width : start.x,
+			start.x + start.width,
 			start.y + start.height * .5f,
 			0);
 
 		Vector3 endPos = new Vector3(
-			end.x + end.width * .5f,
+			end.x,
 			end.y + end.height * .5f,
 			0);
 
-		Vector3 startTan = startPos + Vector3.right * 50;
-		Vector3 endTan = endPos + Vector3.left * 50;
+		Vector3 startTan = startPos + Vector3.right * 100;
+		Vector3 endTan = endPos + Vector3.left * 100;
 
-		Color shadow = new Color(0, 0, 0, 0.06f);
+		Color shadow = new Color(0, 0, 0, 0.1f);
 
 		for (int i = 0; i < 3; i++)
 		{
-			Handles.DrawBezier(startPos, endPos, startTan, endTan, shadow, null, (i + 1) * .5f);
+			Handles.DrawBezier(startPos, endPos, startTan, endTan, shadow, null, (i + 5) * .5f);
 		}
 
-		Handles.DrawBezier(startPos, endPos, startTan, endTan, curveColor, null, 1);
+		Handles.DrawBezier(startPos, endPos, startTan, endTan, curveColor, null, 5);
+	}
+
+	public void SaveConnection(Curve curve)
+	{
+		/*foreach (Curve tempCurve in startNode.curves)
+		{
+			if (tempCurve.endNode == curve.endNode)
+			{
+				return;
+			}
+		}*/
+
+		if (!startNode.curves.Contains(startNode.curves.First(x => x.endNode == curve.endNode)))
+		{
+			startNode.curves.Add(curve);
+		}
+
+		startNode = null;
 	}
 	#endregion
 }

@@ -5,5 +5,5 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Story", menuName = "StoryNode/Story")]
 public class Story : ScriptableObject
 {
-	public List<string> stories = new List<string>() { "test" };
+	public List<string> dialogue = new List<string>() { };
 }

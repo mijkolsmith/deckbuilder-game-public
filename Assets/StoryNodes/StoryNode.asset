@@ -14,11 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   windowRect:
     serializedVersion: 2
-    x: 263
-    y: 322
+    x: 174
+    y: 232
     width: 200
     height: 300
   windowTitle: StoryNode
   changeTitle: 1
-  textAreas: []
-  nodeEditor: {fileID: 0}
+  textAreas:
+  - new text area
+  curves: []
