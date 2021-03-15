@@ -13,6 +13,7 @@ public abstract class BaseNode : ScriptableObject
 	public bool changeTitle;
 	public List<string> textAreas;
 	public List<Curve> curves;
+	public State nodeState;
 
 	private NodeEditor nodeEditor;
 

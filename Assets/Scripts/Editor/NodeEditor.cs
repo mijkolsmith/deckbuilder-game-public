@@ -64,12 +64,17 @@ public class NodeEditor : EditorWindow
 	private void OnDisable()
 	{
 		SaveStoryNodes();
+		SaveChoiceNodes();
+		SaveBattleNodes();
+		windows.Clear();
 		drawCurveOnMousePos = false;
 	}
 
 	private void OnEnable()
 	{
 		LoadStoryNodes();
+		LoadChoiceNodes();
+		LoadBattleNodes();
 		foreach (BaseNode window in windows)
 		{
 			window.SetNodeEditor(this);
@@ -314,7 +319,7 @@ public class NodeEditor : EditorWindow
 
 			if (!foundObjects.Contains(node))
 			{
-				AssetDatabase.CreateAsset(node, "Assets/StoryNodes/" + fileName + ".asset");
+				AssetDatabase.CreateAsset(node, "Assets/ScriptableObjects/StoryNodes/" + fileName + ".asset");
 				AssetDatabase.SaveAssets();
 			}
 		}
@@ -357,14 +362,190 @@ public class NodeEditor : EditorWindow
 				story.dialogue.Add(node.textAreas[i]);
 			}
 
+			//TODO: storyNode can only have one state
+			foreach(Curve curve in node.curves)
+			{
+				story.nextState = curve.endNode.nodeState;
+			}
+
 			string fileName = node.windowTitle;
 
 			if (!foundObjects.Contains(story))
 			{
-				AssetDatabase.CreateAsset(story, "Assets/Stories/" + fileName + ".asset");
+				AssetDatabase.CreateAsset(story, "Assets/ScriptableObjects/Stories/" + fileName + ".asset");
 				AssetDatabase.SaveAssets();
 			}
 		}
+	}
+
+	public void SaveChoiceNodes()
+	{
+		//TODO: Implement SaveChoiceNodes()
+		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(StoryNode).ToString());
+		List<StoryNode> foundObjects = new List<StoryNode>();
+
+		foreach (var fileName in fileNames)
+		{
+			StoryNode foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(StoryNode)) as StoryNode;
+
+			if (windows.Contains(foundObject))
+			{
+				foundObjects.Add(foundObject);
+			}
+			else
+			{
+				AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
+			}
+		}
+
+		foreach (StoryNode node in windows)
+		{
+			string fileName = node.windowTitle;
+
+			if (!foundObjects.Contains(node))
+			{
+				AssetDatabase.CreateAsset(node, "Assets/ScriptableObjects/StoryNodes/" + fileName + ".asset");
+				AssetDatabase.SaveAssets();
+			}
+		}
+
+		*/
+	}
+
+	public void LoadChoiceNodes()
+	{
+		string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(ChoiceNode).ToString());
+
+		foreach (var fileName in fileNames)
+		{
+			ChoiceNode foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(ChoiceNode)) as ChoiceNode;
+			if (foundObject != null)
+			{
+				windows.Add(foundObject as ChoiceNode);
+			}
+		}
+	}
+
+	private void GenerateChoices()
+	{
+		//TODO: Implement GenerateChoices()
+		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(Story).ToString());
+		List<Story> foundObjects = new List<Story>();
+
+		foreach (string fileName in fileNames)
+		{
+			Story foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(Story)) as Story;
+			foundObjects.Add(foundObject);
+			AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
+		}
+
+		foreach (StoryNode node in windows)
+		{
+			Story story = CreateInstance<Story>();
+
+			for (int i = 0; i < node.textAreas.Count; i++)
+			{
+				story.dialogue.Add(node.textAreas[i]);
+			}
+			
+			foreach (Curve curve in node.curves)
+			{
+				story.nextState = curve.endNode.nodeState;
+			}
+
+			string fileName = node.windowTitle;
+
+			if (!foundObjects.Contains(story))
+			{
+				AssetDatabase.CreateAsset(story, "Assets/ScriptableObjects/Stories/" + fileName + ".asset");
+				AssetDatabase.SaveAssets();
+			}
+		}*/
+	}
+
+	public void SaveBattleNodes()
+	{
+		//TODO: Implement SaveBattleNodes()
+		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(StoryNode).ToString());
+		List<StoryNode> foundObjects = new List<StoryNode>();
+
+		foreach (var fileName in fileNames)
+		{
+			StoryNode foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(StoryNode)) as StoryNode;
+
+			if (windows.Contains(foundObject))
+			{
+				foundObjects.Add(foundObject);
+			}
+			else
+			{
+				AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
+			}
+		}
+
+		foreach (StoryNode node in windows)
+		{
+			string fileName = node.windowTitle;
+
+			if (!foundObjects.Contains(node))
+			{
+				AssetDatabase.CreateAsset(node, "Assets/ScriptableObjects/StoryNodes/" + fileName + ".asset");
+				AssetDatabase.SaveAssets();
+			}
+		}
+
+		*/
+	}
+
+	public void LoadBattleNodes()
+	{
+		string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(BattleNode).ToString());
+
+		foreach (var fileName in fileNames)
+		{
+			BattleNode foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(BattleNode)) as BattleNode;
+			if (foundObject != null)
+			{
+				windows.Add(foundObject as BattleNode);
+			}
+		}
+	}
+
+	private void GenerateBattles()
+	{
+		//TODO: Implement GenerateBattles()
+		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(Story).ToString());
+		List<Story> foundObjects = new List<Story>();
+
+		foreach (string fileName in fileNames)
+		{
+			Story foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(Story)) as Story;
+			foundObjects.Add(foundObject);
+			AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
+		}
+
+		foreach (StoryNode node in windows)
+		{
+			Story story = CreateInstance<Story>();
+
+			for (int i = 0; i < node.textAreas.Count; i++)
+			{
+				story.dialogue.Add(node.textAreas[i]);
+			}
+			
+			foreach (Curve curve in node.curves)
+			{
+				story.nextState = curve.endNode.nodeState;
+			}
+
+			string fileName = node.windowTitle;
+
+			if (!foundObjects.Contains(story))
+			{
+				AssetDatabase.CreateAsset(story, "Assets/ScriptableObjects/Stories/" + fileName + ".asset");
+				AssetDatabase.SaveAssets();
+			}
+		}*/
 	}
 
 	public void CheckName()

@@ -5,11 +5,12 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-[CreateAssetMenu(fileName = "Story", menuName = "StoryNode/ChoiceNode")]
-public class ChoiceNode : BaseNode
+[CreateAssetMenu(fileName = "Story", menuName = "NodeEditor/StoryNode")]
+public class StoryNode : BaseNode
 {
 	public override void Init()
 	{
+		nodeState = new StoryState(GameManager.Instance.gameObject.GetComponent<StateManager>());
 		base.Init();
 	}
 

@@ -10,19 +10,22 @@ using System.Linq;
 public class StoryManager : MonoBehaviour
 {
 	public List<Story> stories = new List<Story>();
-	//TODO: add statemanager (choice, battle, story)
-	//replace with state check
 	int storyIndex = 0;
 	int dialogueIndex = 0;
 
-	public TextMeshProUGUI tmp;
+	public TextMeshProUGUI displayText;
 
-	public void Update()
+	private StateManager stateManager;
+	private void Start()
 	{
-		Debug.Log("story: " + storyIndex);
-		Debug.Log("dialogue: " + dialogueIndex);
-		DisplayDialogue();
+		stateManager = GetComponent<StateManager>();
 	}
+
+	//this is called from the StoryState
+	/*public void Update()
+	{
+		DisplayDialogue();
+	}*/
 
 	public void DisplayDialogue()
 	{
@@ -30,16 +33,20 @@ public class StoryManager : MonoBehaviour
 		{
 			if(stories[storyIndex].dialogue.ElementAtOrDefault(dialogueIndex) != null)
 			{
-				tmp.text = stories[storyIndex].dialogue[dialogueIndex];
+				displayText.text = stories[storyIndex].dialogue[dialogueIndex];
 			}
 			else
 			{
-				//go to next node
+				stateManager.SetState(stories[storyIndex].nextState);
+				//TODO:
+				//state = next state
+				//this data should be saved in the Story object
 			}
 		}
 		else
 		{
-			//end of game
+			//TODO:
+			//end of game state?
 		}
 	}
 
@@ -48,7 +55,7 @@ public class StoryManager : MonoBehaviour
 		dialogueIndex++;
 	}
 
-	//temporary helper function
+	//temporary helper function called from a button
 	public void NextStory()
 	{
 		storyIndex++;
