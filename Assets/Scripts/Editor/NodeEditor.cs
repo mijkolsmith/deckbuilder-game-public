@@ -361,16 +361,6 @@ public class NodeEditor : EditorWindow
 
 	private void GenerateStories()
 	{
-		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(Story).ToString());
-		List<Story> foundObjects = new List<Story>();
-
-		foreach (string fileName in fileNames)
-		{
-			Story foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(Story)) as Story;
-			foundObjects.Add(foundObject);
-			AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
-		}*/
-
 		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(StoryNode)).ToList();
 
 		foreach (StoryNode node in nodes)
@@ -392,8 +382,7 @@ public class NodeEditor : EditorWindow
 
 			if (!foundObjects.Contains(story))
 			{
-				AssetDatabase.CreateAsset(story, "Assets/ScriptableObjects/Objects/" + fileName + ".asset");
-				Debug.Log(AssetDatabase.GetAssetPath(story));
+				AssetDatabase.CreateAsset(story, "Assets/ScriptableObjects/LoadableObjects/" + fileName + ".asset");
 			}
 		}
 	}
@@ -429,16 +418,6 @@ public class NodeEditor : EditorWindow
 
 	private void GenerateChoices()
 	{
-		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(Story).ToString());
-		List<Choice> foundObjects = new List<Choice>();
-
-		foreach (string fileName in fileNames)
-		{
-			Choice foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(Choice)) as Choice;
-			foundObjects.Add(foundObject);
-			AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
-		}*/
-
 		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(ChoiceNode)).ToList();
 
 		foreach (ChoiceNode node in nodes)
@@ -451,7 +430,7 @@ public class NodeEditor : EditorWindow
 
 			if (!foundObjects.Contains(choice))
 			{
-				AssetDatabase.CreateAsset(choice, "Assets/ScriptableObjects/Objects/" + fileName + ".asset");
+				AssetDatabase.CreateAsset(choice, "Assets/ScriptableObjects/LoadableObjects/" + fileName + ".asset");
 			}
 		}
 	}
@@ -487,16 +466,6 @@ public class NodeEditor : EditorWindow
 
 	private void GenerateBattles()
 	{
-		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(Battle).ToString());
-		List<Battle> foundObjects = new List<Battle>();
-
-		foreach (string fileName in fileNames)
-		{
-			Battle foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(Battle)) as Battle;
-			foundObjects.Add(foundObject);
-			AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
-		}*/
-
 		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(BattleNode)).ToList();
 
 		foreach (BattleNode node in nodes)
@@ -509,7 +478,7 @@ public class NodeEditor : EditorWindow
 
 			if (!foundObjects.Contains(battle))
 			{
-				AssetDatabase.CreateAsset(battle, "Assets/ScriptableObjects/Objects/" + fileName + ".asset");
+				AssetDatabase.CreateAsset(battle, "Assets/ScriptableObjects/LoadableObjects/" + fileName + ".asset");
 			}
 		}
 	}
@@ -578,18 +547,20 @@ public class NodeEditor : EditorWindow
 	/// <param name="curve"></param>
 	public void SaveConnection(Curve curve)
 	{
-		/*foreach (Curve tempCurve in startNode.curves)
+		foreach (Curve tempCurve in startNode.curves)
 		{
 			if (tempCurve.endNode == curve.endNode)
 			{
 				return;
 			}
-		}*/
+		}
+		startNode.curves.Add(curve);
 
-		if (!startNode.curves.Contains(startNode.curves.First(x => x.endNode == curve.endNode)))
+		//doesn't work if (x.endNode == null)
+		/*if (!startNode.curves.Contains(startNode.curves.First(x => x.endNode == curve.endNode)))
 		{
 			startNode.curves.Add(curve);
-		}
+		}*/
 
 		startNode = null;
 	}

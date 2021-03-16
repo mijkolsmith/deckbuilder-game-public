@@ -12,6 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82427572391fff847ac7eb52d35de2ac, type: 3}
   m_Name: StoryNode
   m_EditorClassIdentifier: 
-  dialogue:
-  - Hello this is my story
-  - Story dialogue 2
+  dialogue: []

@@ -9,9 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 82427572391fff847ac7eb52d35de2ac, type: 3}
-  m_Name: Story
+  m_Script: {fileID: 11500000, guid: c52a9c8a8b790a64bb2a0424032778e8, type: 3}
+  m_Name: ChoiceNode
   m_EditorClassIdentifier: 
-  dialogue:
-  - dada
-  - dadadada
+  choices: []
