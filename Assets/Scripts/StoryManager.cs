@@ -62,8 +62,9 @@ public class StoryManager : MonoBehaviour
 		dialogueIndex = 0;
 	}
 
-	public void LoadStories()
+	public void LoadObjects()
 	{
+		//TODO: make loadableObjectsManager? or turn this into that?
 #if UNITY_EDITOR
 		stories.Clear();
 

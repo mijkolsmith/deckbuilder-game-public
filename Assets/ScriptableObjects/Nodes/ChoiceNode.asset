@@ -9,17 +9,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fcfbd21b83d423747bc3efedbc8dcf2d, type: 3}
-  m_Name: StoryNode 2
+  m_Script: {fileID: 11500000, guid: c9b9a46990732ce4d929d7c9ce6b9ce5, type: 3}
+  m_Name: ChoiceNode
   m_EditorClassIdentifier: 
   windowRect:
     serializedVersion: 2
-    x: 580
-    y: 248
+    x: 679
+    y: 246
     width: 200
     height: 300
-  windowTitle: StoryNode 2
-  changeTitle: 1
-  textAreas:
-  - Hello this is my second story 2
+  windowTitle: ChoiceNode
+  changeTitle: 0
+  textAreas: []
   curves: []

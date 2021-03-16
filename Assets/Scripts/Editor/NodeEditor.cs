@@ -9,6 +9,7 @@ public enum UserActions
 {
 	ADD_STORY_NODE,
 	ADD_CHOICE_NODE,
+	ADD_BATTLE_NODE,
 
 	CHANGE_TITLE,
 	ADD_CURVE,
@@ -20,7 +21,9 @@ public enum UserActions
 
 public class NodeEditor : EditorWindow
 {
-	static List<BaseNode> windows = new List<BaseNode>();
+	List<BaseNode> windows = new List<BaseNode>();
+	List<BaseNode> foundNodes = new List<BaseNode>();
+	List<LoadableObject> foundObjects = new List<LoadableObject>();
 	Vector3 mousePos;
 	bool makeTransition;
 	bool clickedOnWindow;
@@ -63,9 +66,28 @@ public class NodeEditor : EditorWindow
 
 	private void OnDisable()
 	{
+		string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(BaseNode).ToString());
+
+		foreach (var fileName in fileNames)
+		{
+			BaseNode foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(BaseNode)) as BaseNode;
+
+			if (windows.Contains(foundObject))
+			{
+				foundNodes.Add(foundObject);
+			}
+			else
+			{
+				AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
+			}
+		}
+
 		SaveStoryNodes();
 		SaveChoiceNodes();
 		SaveBattleNodes();
+
+		AssetDatabase.SaveAssets();
+
 		windows.Clear();
 		drawCurveOnMousePos = false;
 	}
@@ -81,13 +103,16 @@ public class NodeEditor : EditorWindow
 		}
 	}
 
+	/// <summary>
+	/// Draws all the windows in the window list
+	/// </summary>
 	void DrawWindows()
 	{
 		BeginWindows();
-		
-		if (GUILayout.Button("Generate Stories", GUILayout.Width(120)))
+
+		if (GUILayout.Button("Generate ScriptableObjects", GUILayout.Width(170)))
 		{
-			GenerateStories();
+			GenerateScriptableObjects();
 		}
 
 		foreach (BaseNode n in windows)
@@ -109,6 +134,10 @@ public class NodeEditor : EditorWindow
 		EndWindows();
 	}
 
+	/// <summary>
+	/// Draw a specific window
+	/// </summary>
+	/// <param name="id">Window id</param>
 	void DrawNodeWindow(int id)
 	{
 		if (id >= windows.Count)
@@ -120,7 +149,9 @@ public class NodeEditor : EditorWindow
 		GUI.DragWindow();
 	}
 
-	//Draw the curve when making a new one
+	/// <summary>
+	/// Draw a new curve to your mouse when making it
+	/// </summary>
 	void DrawCursorCurve()
 	{
 		StoryNode tempNode = CreateInstance<StoryNode>();
@@ -130,12 +161,14 @@ public class NodeEditor : EditorWindow
 		Repaint();
 	}
 
-	//Check the user input
+	/// <summary>
+	/// Check the user input
+	/// </summary>
 	void UserInput(Event e)
 	{
-		if(e.button == 1 && !makeTransition)
+		if (e.button == 1 && !makeTransition)
 		{
-			if(e.type == UnityEngine.EventType.MouseDown)
+			if (e.type == UnityEngine.EventType.MouseDown)
 			{
 				RightClick(e);
 			}
@@ -159,7 +192,9 @@ public class NodeEditor : EditorWindow
 		}
 	}
 
-	//When lmb is pressed
+	/// <summary>
+	/// When lmb is pressed
+	/// </summary>
 	void LeftClick(Event e)
 	{
 		selectedNode = null;
@@ -179,7 +214,9 @@ public class NodeEditor : EditorWindow
 		drawCurveOnMousePos = false;
 	}
 
-	//When rmb is pressed
+	/// <summary>
+	/// When rmb is pressed
+	/// </summary>
 	void RightClick(Event e)
 	{
 		selectedNode = null;
@@ -204,20 +241,24 @@ public class NodeEditor : EditorWindow
 		}
 	}
 
-	//Create rmb press menu for adding new nodes
+	/// <summary>
+	/// Create rmb press menu for adding new nodes
+	/// </summary>
 	void AddNewNode(Event e)
 	{
 		GenericMenu menu = new GenericMenu();
 
-		//menu.AddSeparator("");
-		menu.AddItem(new GUIContent("Add Dialogue"), false, ContextCallback, UserActions.ADD_STORY_NODE);
-		menu.AddItem(new GUIContent("Add Choice"), false, ContextCallback, UserActions.ADD_CHOICE_NODE);
+		menu.AddItem(new GUIContent("Add Dialogue Node"), false, ContextCallback, UserActions.ADD_STORY_NODE);
+		menu.AddItem(new GUIContent("Add Choice Node"), false, ContextCallback, UserActions.ADD_CHOICE_NODE);
+		menu.AddItem(new GUIContent("Add Battle Node"), false, ContextCallback, UserActions.ADD_BATTLE_NODE);
 
 		menu.ShowAsContext();
 		e.Use();
 	}
 
-	//Create rmb press menu for modifying existing nodes
+	/// <summary>
+	/// Create rmb press menu for modifying existing nodes
+	/// </summary>
 	void ModifyNode(Event e)
 	{
 		GenericMenu menu = new GenericMenu();
@@ -228,7 +269,9 @@ public class NodeEditor : EditorWindow
 		e.Use();
 	}
 
-	//Check which UserAction has been selected in the contextmenu, and execute code accordingly
+	/// <summary>
+	/// Check which UserAction has been selected in the contextmenu, and execute code accordingly
+	/// </summary>
 	void ContextCallback(object o)
 	{
 		UserActions a = (UserActions)o;
@@ -237,24 +280,17 @@ public class NodeEditor : EditorWindow
 			//creation
 			case UserActions.ADD_STORY_NODE:
 				StoryNode storyNode = CreateInstance<StoryNode>();
-				storyNode.windowRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight);
-				storyNode.windowTitle = "StoryNode";
-				storyNode.SetNodeEditor(this);
-
-				selectedNode = storyNode;
-				storyNode.Init();
-				windows.Add(storyNode);
+				CreateNode(storyNode);
 				break;
 
 			case UserActions.ADD_CHOICE_NODE:
 				ChoiceNode choiceNode = CreateInstance<ChoiceNode>();
-				choiceNode.windowRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight);
-				choiceNode.windowTitle = "ChoiceNode";
-				choiceNode.SetNodeEditor(this);
+				CreateNode(choiceNode);
+				break;
 
-				selectedNode = choiceNode;
-				choiceNode.Init();
-				windows.Add(choiceNode);
+			case UserActions.ADD_BATTLE_NODE:
+				BattleNode battleNode = CreateInstance<BattleNode>();
+				CreateNode(battleNode);
 				break;
 
 			//editing
@@ -277,7 +313,7 @@ public class NodeEditor : EditorWindow
 
 			//deletion
 			case UserActions.DELETE_NODE:
-				if(selectedNode != null)
+				if (selectedNode != null)
 				{
 					windows.Remove(selectedNode);
 					//remove leaves an empty object behind and we don't want that
@@ -294,40 +330,22 @@ public class NodeEditor : EditorWindow
 	#endregion
 
 	#region Saving and Loading
-	public void SaveStoryNodes()
+	private void SaveStoryNodes()
 	{
-		string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(StoryNode).ToString());
-		List<StoryNode> foundObjects = new List<StoryNode>();
+		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(StoryNode)).ToList();
 
-		foreach (var fileName in fileNames)
-		{
-			StoryNode foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(StoryNode)) as StoryNode;
-
-			if (windows.Contains(foundObject))
-			{
-				foundObjects.Add(foundObject);
-			}
-			else
-			{
-				AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
-			}
-		}
-
-		foreach (StoryNode node in windows)
+		foreach (StoryNode node in nodes)
 		{
 			string fileName = node.windowTitle;
 
-			if (!foundObjects.Contains(node))
+			if (!foundNodes.Contains(node))
 			{
-				AssetDatabase.CreateAsset(node, "Assets/ScriptableObjects/StoryNodes/" + fileName + ".asset");
-				AssetDatabase.SaveAssets();
+				AssetDatabase.CreateAsset(node, "Assets/ScriptableObjects/Nodes/" + fileName + ".asset");
 			}
 		}
-
-		windows.Clear();
 	}
 
-	public void LoadStoryNodes()
+	private void LoadStoryNodes()
 	{
 		string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(StoryNode).ToString());
 
@@ -343,7 +361,7 @@ public class NodeEditor : EditorWindow
 
 	private void GenerateStories()
 	{
-		string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(Story).ToString());
+		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(Story).ToString());
 		List<Story> foundObjects = new List<Story>();
 
 		foreach (string fileName in fileNames)
@@ -351,19 +369,21 @@ public class NodeEditor : EditorWindow
 			Story foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(Story)) as Story;
 			foundObjects.Add(foundObject);
 			AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
-		}
+		}*/
 
-		foreach (StoryNode node in windows)
+		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(StoryNode)).ToList();
+
+		foreach (StoryNode node in nodes)
 		{
 			Story story = CreateInstance<Story>();
 
-			for(int i = 0; i < node.textAreas.Count; i++)
+			for (int i = 0; i < node.textAreas.Count; i++)
 			{
 				story.dialogue.Add(node.textAreas[i]);
 			}
 
 			//TODO: storyNode can only have one state
-			foreach(Curve curve in node.curves)
+			foreach (Curve curve in node.curves)
 			{
 				story.nextState = curve.endNode.nodeState;
 			}
@@ -372,47 +392,28 @@ public class NodeEditor : EditorWindow
 
 			if (!foundObjects.Contains(story))
 			{
-				AssetDatabase.CreateAsset(story, "Assets/ScriptableObjects/Stories/" + fileName + ".asset");
-				AssetDatabase.SaveAssets();
+				AssetDatabase.CreateAsset(story, "Assets/ScriptableObjects/Objects/" + fileName + ".asset");
+				Debug.Log(AssetDatabase.GetAssetPath(story));
 			}
 		}
 	}
 
-	public void SaveChoiceNodes()
+	private void SaveChoiceNodes()
 	{
-		//TODO: Implement SaveChoiceNodes()
-		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(StoryNode).ToString());
-		List<StoryNode> foundObjects = new List<StoryNode>();
+		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(ChoiceNode)).ToList();
 
-		foreach (var fileName in fileNames)
-		{
-			StoryNode foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(StoryNode)) as StoryNode;
-
-			if (windows.Contains(foundObject))
-			{
-				foundObjects.Add(foundObject);
-			}
-			else
-			{
-				AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
-			}
-		}
-
-		foreach (StoryNode node in windows)
+		foreach (ChoiceNode node in nodes)
 		{
 			string fileName = node.windowTitle;
 
-			if (!foundObjects.Contains(node))
+			if (!foundNodes.Contains(node))
 			{
-				AssetDatabase.CreateAsset(node, "Assets/ScriptableObjects/StoryNodes/" + fileName + ".asset");
-				AssetDatabase.SaveAssets();
+				AssetDatabase.CreateAsset(node, "Assets/ScriptableObjects/Nodes/" + fileName + ".asset");
 			}
 		}
-
-		*/
 	}
 
-	public void LoadChoiceNodes()
+	private void LoadChoiceNodes()
 	{
 		string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(ChoiceNode).ToString());
 
@@ -428,76 +429,49 @@ public class NodeEditor : EditorWindow
 
 	private void GenerateChoices()
 	{
-		//TODO: Implement GenerateChoices()
 		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(Story).ToString());
-		List<Story> foundObjects = new List<Story>();
+		List<Choice> foundObjects = new List<Choice>();
 
 		foreach (string fileName in fileNames)
 		{
-			Story foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(Story)) as Story;
+			Choice foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(Choice)) as Choice;
 			foundObjects.Add(foundObject);
 			AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
-		}
-
-		foreach (StoryNode node in windows)
-		{
-			Story story = CreateInstance<Story>();
-
-			for (int i = 0; i < node.textAreas.Count; i++)
-			{
-				story.dialogue.Add(node.textAreas[i]);
-			}
-			
-			foreach (Curve curve in node.curves)
-			{
-				story.nextState = curve.endNode.nodeState;
-			}
-
-			string fileName = node.windowTitle;
-
-			if (!foundObjects.Contains(story))
-			{
-				AssetDatabase.CreateAsset(story, "Assets/ScriptableObjects/Stories/" + fileName + ".asset");
-				AssetDatabase.SaveAssets();
-			}
 		}*/
-	}
 
-	public void SaveBattleNodes()
-	{
-		//TODO: Implement SaveBattleNodes()
-		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(StoryNode).ToString());
-		List<StoryNode> foundObjects = new List<StoryNode>();
+		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(ChoiceNode)).ToList();
 
-		foreach (var fileName in fileNames)
+		foreach (ChoiceNode node in nodes)
 		{
-			StoryNode foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(StoryNode)) as StoryNode;
+			Choice choice = CreateInstance<Choice>();
 
-			if (windows.Contains(foundObject))
+			//TODO: Implement setting the variables of Choices
+
+			string fileName = node.windowTitle;
+
+			if (!foundObjects.Contains(choice))
 			{
-				foundObjects.Add(foundObject);
-			}
-			else
-			{
-				AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
+				AssetDatabase.CreateAsset(choice, "Assets/ScriptableObjects/Objects/" + fileName + ".asset");
 			}
 		}
+	}
 
-		foreach (StoryNode node in windows)
+	private void SaveBattleNodes()
+	{
+		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(BattleNode)).ToList();
+
+		foreach (BattleNode node in nodes)
 		{
 			string fileName = node.windowTitle;
 
-			if (!foundObjects.Contains(node))
+			if (!foundNodes.Contains(node))
 			{
-				AssetDatabase.CreateAsset(node, "Assets/ScriptableObjects/StoryNodes/" + fileName + ".asset");
-				AssetDatabase.SaveAssets();
+				AssetDatabase.CreateAsset(node, "Assets/ScriptableObjects/Nodes/" + fileName + ".asset");
 			}
 		}
-
-		*/
 	}
 
-	public void LoadBattleNodes()
+	private void LoadBattleNodes()
 	{
 		string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(BattleNode).ToString());
 
@@ -513,58 +487,57 @@ public class NodeEditor : EditorWindow
 
 	private void GenerateBattles()
 	{
-		//TODO: Implement GenerateBattles()
-		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(Story).ToString());
-		List<Story> foundObjects = new List<Story>();
+		/*string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(Battle).ToString());
+		List<Battle> foundObjects = new List<Battle>();
 
 		foreach (string fileName in fileNames)
 		{
-			Story foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(Story)) as Story;
+			Battle foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(Battle)) as Battle;
 			foundObjects.Add(foundObject);
 			AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
-		}
+		}*/
 
-		foreach (StoryNode node in windows)
+		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(BattleNode)).ToList();
+
+		foreach (BattleNode node in nodes)
 		{
-			Story story = CreateInstance<Story>();
+			Battle battle = CreateInstance<Battle>();
 
-			for (int i = 0; i < node.textAreas.Count; i++)
-			{
-				story.dialogue.Add(node.textAreas[i]);
-			}
-			
-			foreach (Curve curve in node.curves)
-			{
-				story.nextState = curve.endNode.nodeState;
-			}
+			//TODO: Implement setting the variables of Battles
 
 			string fileName = node.windowTitle;
 
-			if (!foundObjects.Contains(story))
+			if (!foundObjects.Contains(battle))
 			{
-				AssetDatabase.CreateAsset(story, "Assets/ScriptableObjects/Stories/" + fileName + ".asset");
-				AssetDatabase.SaveAssets();
-			}
-		}*/
-	}
-
-	public void CheckName()
-	{
-		if (selectedNode != null)
-		{
-			foreach (var window in windows)
-			{
-				if (selectedNode.windowTitle == window.windowTitle && selectedNode != window)
-				{
-					selectedNode.windowTitle += " 2";
-				}
+				AssetDatabase.CreateAsset(battle, "Assets/ScriptableObjects/Objects/" + fileName + ".asset");
 			}
 		}
+	}
+
+	private void GenerateScriptableObjects()
+	{
+		string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(LoadableObject).ToString());
+
+		foreach (string fileName in fileNames)
+		{
+			LoadableObject foundObject = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(fileName), typeof(LoadableObject)) as LoadableObject;
+			foundObjects.Add(foundObject);
+			AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
+		}
+		
+		GenerateStories();
+		GenerateChoices();
+		GenerateBattles();
+
+		AssetDatabase.SaveAssets();
 	}
 	#endregion
 
 	#region Helper Methods
-	//Draw the curves for each saved curve
+	/// <summary>
+	/// Draw a curve
+	/// </summary>
+	/// <param name="curve"></param>
 	public static void DrawNodeCurve(Curve curve)
 	{
 		Rect start = curve.startNode.windowRect;
@@ -599,6 +572,10 @@ public class NodeEditor : EditorWindow
 		Handles.DrawBezier(startPos, endPos, startTan, endTan, curveColor, null, 5);
 	}
 
+	/// <summary>
+	/// Save a Curve in their startNode
+	/// </summary>
+	/// <param name="curve"></param>
 	public void SaveConnection(Curve curve)
 	{
 		/*foreach (Curve tempCurve in startNode.curves)
@@ -615,6 +592,39 @@ public class NodeEditor : EditorWindow
 		}
 
 		startNode = null;
+	}
+
+	/// <summary>
+	/// Create a new node at mousePos with windowWidth and windowHeight
+	/// </summary>
+	/// <param name="node"></param>
+	private void CreateNode(BaseNode node)
+	{
+		node.windowRect = new Rect(mousePos.x, mousePos.y, windowWidth, windowHeight);
+		node.windowTitle = node.GetType().ToString();
+		node.SetNodeEditor(this);
+		node.Init();
+
+		selectedNode = node;
+		windows.Add(node);
+	}
+
+	/// <summary>
+	/// Check the name of the selectedNode, if it's the same as another node add a 2 at the end
+	/// </summary>
+	public void CheckName()
+	{
+		if (selectedNode != null)
+		{
+			foreach (var window in windows)
+			{
+				if (selectedNode.windowTitle == window.windowTitle && selectedNode != window)
+				{
+					selectedNode.windowTitle += " 2";
+					Repaint();
+				}
+			}
+		}
 	}
 	#endregion
 }

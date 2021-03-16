@@ -11,9 +11,9 @@ public class StoryUpdaterEditor : Editor
 		DrawDefaultInspector();
 
 		StoryManager myScript = (StoryManager)target;
-		if (GUILayout.Button("Load Stories"))
+		if (GUILayout.Button("Load Objects"))
 		{
-			myScript.LoadStories();
+			myScript.LoadObjects();
 		}
 	}
 }
