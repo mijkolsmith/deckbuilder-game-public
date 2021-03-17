@@ -15,21 +15,6 @@ public class StoryNode : BaseNode
 		base.Init();
 	}
 
-	public override void DrawWindow()
-	{
-		base.DrawWindow();
-	}
-
-	public override void DrawTextAreas()
-	{
-		base.DrawTextAreas();
-	}
-
-	public override void DrawCurves()
-	{
-		base.DrawCurves();
-	}
-
 	public override LoadableObject CreateObject()
 	{
 		return CreateInstance<Story>();

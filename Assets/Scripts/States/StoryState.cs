@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class StoryState : State
 {
-	public StoryState(StateManager stateManager) : base(stateManager) { }
 	public Story story;
 	public StoryManager storyManager;
+
+	public StoryState(StateManager stateManager) : base(stateManager) { }
 
 	public override IEnumerator Start()
 	{

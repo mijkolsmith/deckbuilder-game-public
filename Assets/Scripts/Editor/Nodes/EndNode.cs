@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -14,19 +15,28 @@ public class EndNode : BaseNode
 		base.Init();
 	}
 
-	public override void DrawWindow()
+	public override LoadableObject CreateObject()
 	{
-		base.DrawWindow();
+		return CreateInstance<End>();
 	}
 
-	public override void DrawTextAreas()
+	public override void Generate()
 	{
-		base.DrawTextAreas();
-	}
+		List<BaseNode> nodes = nodeEditor.windows.Where(x => x.GetType() == typeof(EndNode)).ToList();
 
-	public override void DrawCurves()
-	{
-		base.DrawCurves();
+		foreach (EndNode node in nodes)
+		{
+			End end = CreateInstance<End>();
+
+			//TODO: Implement setting the variables of EndNode if there will be any
+
+			string fileName = node.windowTitle;
+
+			if (!nodeEditor.foundObjects.Contains(end))
+			{
+				AssetDatabase.CreateAsset(end, "Assets/ScriptableObjects/LoadableObjects/" + fileName + ".asset");
+			}
+		}
 	}
 
 #if UNITY_EDITOR

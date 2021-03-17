@@ -32,17 +32,16 @@ public class NodeEditor : EditorWindow
 	public List<BaseNode> foundNodes = new List<BaseNode>();
 	public List<LoadableObject> foundObjects = new List<LoadableObject>();
 	Vector3 mousePos;
-	bool makeTransition;
+	//bool makeTransition;
 	bool clickedOnWindow;
 	bool drawCurveOnMousePos;
 
 	BaseNode startNode;
 	//Curve tempCurve;
-
 	BaseNode selectedNode;
 
-	int windowWidth = 200;
-	int windowHeight = 300;
+	readonly int windowWidth = 200;
+	readonly int windowHeight = 300;
 
 	[MenuItem("NodeEditor/Node Editor")]
 	static void Init()
@@ -176,7 +175,7 @@ public class NodeEditor : EditorWindow
 	/// </summary>
 	void UserInput(Event e)
 	{
-		if (e.button == 1 && !makeTransition)
+		if (e.button == 1)// && !makeTransition)
 		{
 			if (e.type == UnityEngine.EventType.MouseDown)
 			{
@@ -184,7 +183,7 @@ public class NodeEditor : EditorWindow
 			}
 		}
 
-		if (e.button == 0 && !makeTransition)
+		if (e.button == 0)// && !makeTransition)
 		{
 			if (e.type == UnityEngine.EventType.MouseDown)
 			{
@@ -193,7 +192,7 @@ public class NodeEditor : EditorWindow
 		}
 
 		//Delete currently selected node
-		if (e.keyCode == KeyCode.Delete && !makeTransition)
+		if (e.keyCode == KeyCode.Delete)// && !makeTransition)
 		{
 			if (e.type == UnityEngine.EventType.KeyDown)
 			{
@@ -361,6 +360,7 @@ public class NodeEditor : EditorWindow
 	#endregion
 
 	#region Saving and Loading
+	//TODO: move the saving and loading methods to the Nodes
 	private void SaveStoryNodes()
 	{
 		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(StoryNode)).ToList();
@@ -514,7 +514,7 @@ public class NodeEditor : EditorWindow
 	/// Save a Curve in their startNode
 	/// </summary>
 	/// <param name="curve"></param>
-	public void SaveConnection(Curve curve)
+	private void SaveConnection(Curve curve)
 	{
 		/*foreach (Curve tempCurve in startNode.curves)
 		{
