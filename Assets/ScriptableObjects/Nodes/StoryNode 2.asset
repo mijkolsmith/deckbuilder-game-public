@@ -9,16 +9,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42507963eff5e43499c11587b96fb83d, type: 3}
-  m_Name: BattleNode
+  m_Script: {fileID: 11500000, guid: fcfbd21b83d423747bc3efedbc8dcf2d, type: 3}
+  m_Name: StoryNode 2
   m_EditorClassIdentifier: 
   windowRect:
     serializedVersion: 2
-    x: 1113
-    y: 245
+    x: 564
+    y: 339
     width: 200
     height: 300
-  windowTitle: BattleNode
+  windowTitle: StoryNode 2
   changeTitle: 0
+  changeTextAreas: 0
+  changeCurveConditions: 0
   textAreas: []
   curves: []

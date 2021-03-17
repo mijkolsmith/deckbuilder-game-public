@@ -7,28 +7,38 @@ using System.Linq;
 
 public enum UserActions
 {
+	//additing
 	ADD_STORY_NODE,
 	ADD_CHOICE_NODE,
 	ADD_BATTLE_NODE,
 
-	CHANGE_TITLE,
+	//editing
 	ADD_CURVE,
 	ADD_DIALOGUE,
 	REMOVE_DIALOGUE,
 
+	//hiding or showing
+	CHANGE_TITLE,
+	CHANGE_TEXTAREAS,
+	CHANGE_REQUIREMENTS,
+
+	//deleting
 	DELETE_NODE
 }
 
 public class NodeEditor : EditorWindow
 {
-	List<BaseNode> windows = new List<BaseNode>();
-	List<BaseNode> foundNodes = new List<BaseNode>();
-	List<LoadableObject> foundObjects = new List<LoadableObject>();
+	public List<BaseNode> windows = new List<BaseNode>();
+	public List<BaseNode> foundNodes = new List<BaseNode>();
+	public List<LoadableObject> foundObjects = new List<LoadableObject>();
 	Vector3 mousePos;
 	bool makeTransition;
 	bool clickedOnWindow;
 	bool drawCurveOnMousePos;
+
 	BaseNode startNode;
+	//Curve tempCurve;
+
 	BaseNode selectedNode;
 
 	int windowWidth = 200;
@@ -150,13 +160,13 @@ public class NodeEditor : EditorWindow
 	}
 
 	/// <summary>
-	/// Draw a new curve to your mouse when making it
+	/// Draw a new curve from a node to your mouse when making it
 	/// </summary>
 	void DrawCursorCurve()
 	{
 		StoryNode tempNode = CreateInstance<StoryNode>();
 		tempNode.windowRect = new Rect(mousePos.x, mousePos.y, 0, 0);
-		Curve tempCurve = new Curve(startNode, tempNode, Color.black);
+		Curve tempCurve = new Curve(startNode, tempNode, null, null, Color.black);
 		DrawNodeCurve(tempCurve);
 		Repaint();
 	}
@@ -205,8 +215,17 @@ public class NodeEditor : EditorWindow
 				selectedNode = windows[i];
 				if (drawCurveOnMousePos)
 				{
-					Curve curve = new Curve(startNode, selectedNode, Color.black);
-					SaveConnection(curve);
+					LoadableObject startObject = startNode.CreateObject();
+
+					LoadableObject nextObject = selectedNode.CreateObject();
+
+					foreach (Curve curve in selectedNode.curves)
+					{
+						nextObject = curve.startObject;
+					}
+
+					Curve newCurve = new Curve(startNode, selectedNode, startObject, nextObject, Color.black);
+					SaveConnection(newCurve);
 				}
 				break;
 			}
@@ -294,10 +313,6 @@ public class NodeEditor : EditorWindow
 				break;
 
 			//editing
-			case UserActions.CHANGE_TITLE:
-				selectedNode.changeTitle = false;
-				break;
-
 			case UserActions.ADD_CURVE:
 				drawCurveOnMousePos = true;
 				startNode = selectedNode;
@@ -308,7 +323,23 @@ public class NodeEditor : EditorWindow
 				break;
 
 			case UserActions.REMOVE_DIALOGUE:
-				selectedNode.textAreas.RemoveAt(selectedNode.textAreas.Count - 1);
+				if (selectedNode.textAreas.Count != 0)
+				{
+					selectedNode.textAreas.RemoveAt(selectedNode.textAreas.Count - 1);
+				}
+				break;
+
+			//hiding or showing
+			case UserActions.CHANGE_TITLE:
+				selectedNode.changeTitle = selectedNode.changeTitle ? false : true;
+				break;
+
+			case UserActions.CHANGE_TEXTAREAS:
+				selectedNode.changeTextAreas = selectedNode.changeTextAreas ? false : true;
+				break;
+
+			case UserActions.CHANGE_REQUIREMENTS:
+				selectedNode.changeCurveConditions = selectedNode.changeCurveConditions ? false : true;
 				break;
 
 			//deletion
@@ -318,7 +349,7 @@ public class NodeEditor : EditorWindow
 					windows.Remove(selectedNode);
 					//remove leaves an empty object behind and we don't want that
 					windows.RemoveAll(item => item == null);
-					selectedNode = null;
+					DestroyImmediate(selectedNode);
 					Repaint();
 				}
 				break;
@@ -359,34 +390,6 @@ public class NodeEditor : EditorWindow
 		}
 	}
 
-	private void GenerateStories()
-	{
-		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(StoryNode)).ToList();
-
-		foreach (StoryNode node in nodes)
-		{
-			Story story = CreateInstance<Story>();
-
-			for (int i = 0; i < node.textAreas.Count; i++)
-			{
-				story.dialogue.Add(node.textAreas[i]);
-			}
-
-			//TODO: storyNode can only have one state
-			foreach (Curve curve in node.curves)
-			{
-				story.nextState = curve.endNode.nodeState;
-			}
-
-			string fileName = node.windowTitle;
-
-			if (!foundObjects.Contains(story))
-			{
-				AssetDatabase.CreateAsset(story, "Assets/ScriptableObjects/LoadableObjects/" + fileName + ".asset");
-			}
-		}
-	}
-
 	private void SaveChoiceNodes()
 	{
 		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(ChoiceNode)).ToList();
@@ -412,25 +415,6 @@ public class NodeEditor : EditorWindow
 			if (foundObject != null)
 			{
 				windows.Add(foundObject as ChoiceNode);
-			}
-		}
-	}
-
-	private void GenerateChoices()
-	{
-		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(ChoiceNode)).ToList();
-
-		foreach (ChoiceNode node in nodes)
-		{
-			Choice choice = CreateInstance<Choice>();
-
-			//TODO: Implement setting the variables of Choices
-
-			string fileName = node.windowTitle;
-
-			if (!foundObjects.Contains(choice))
-			{
-				AssetDatabase.CreateAsset(choice, "Assets/ScriptableObjects/LoadableObjects/" + fileName + ".asset");
 			}
 		}
 	}
@@ -464,25 +448,6 @@ public class NodeEditor : EditorWindow
 		}
 	}
 
-	private void GenerateBattles()
-	{
-		List<BaseNode> nodes = windows.Where(x => x.GetType() == typeof(BattleNode)).ToList();
-
-		foreach (BattleNode node in nodes)
-		{
-			Battle battle = CreateInstance<Battle>();
-
-			//TODO: Implement setting the variables of Battles
-
-			string fileName = node.windowTitle;
-
-			if (!foundObjects.Contains(battle))
-			{
-				AssetDatabase.CreateAsset(battle, "Assets/ScriptableObjects/LoadableObjects/" + fileName + ".asset");
-			}
-		}
-	}
-
 	private void GenerateScriptableObjects()
 	{
 		string[] fileNames = AssetDatabase.FindAssets("t:" + typeof(LoadableObject).ToString());
@@ -494,9 +459,13 @@ public class NodeEditor : EditorWindow
 			AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(fileName));
 		}
 		
-		GenerateStories();
-		GenerateChoices();
-		GenerateBattles();
+		foreach (BaseNode window in windows)
+		{
+			window.Generate();
+		}
+		//GenerateStories();
+		//GenerateChoices();
+		//GenerateBattles();
 
 		AssetDatabase.SaveAssets();
 	}
@@ -547,20 +516,23 @@ public class NodeEditor : EditorWindow
 	/// <param name="curve"></param>
 	public void SaveConnection(Curve curve)
 	{
-		foreach (Curve tempCurve in startNode.curves)
+		/*foreach (Curve tempCurve in startNode.curves)
 		{
 			if (tempCurve.endNode == curve.endNode)
 			{
 				return;
 			}
 		}
-		startNode.curves.Add(curve);
+		startNode.curves.Add(curve);*/
 
-		//doesn't work if (x.endNode == null)
-		/*if (!startNode.curves.Contains(startNode.curves.First(x => x.endNode == curve.endNode)))
+		if (!startNode.curves.Any(x => x.endNode == curve.endNode))
 		{
+			if (startNode.GetType() == typeof(StoryNode))
+			{
+				startNode.curves.Clear();
+			}
 			startNode.curves.Add(curve);
-		}*/
+		}
 
 		startNode = null;
 	}
